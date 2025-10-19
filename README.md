@@ -17,7 +17,7 @@ A focused operator for **Oracle Container Engine for Kubernetes (OKE)** that sol
 
 ## Install (Helm)
 ```bash
-helm upgrade --install oke-ingress-combined charts/oke-ingress-combined-operator   -n kube-system --create-namespace   --set image.repository=ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator   --set image.tag=0.3.0   --set controllers.enableLabeler=true   --set controllers.enableBackendSync=true   --set labeler.ingressNamespace=ingress-nginx   --set labeler.ingressService=ingress-nginx-controller   --set labeler.labelKey=role   --set labeler.labelValue=ingress
+helm upgrade --install oke-ingress-combined charts/oke-ingress-combined-operator   -n kube-system --create-namespace   --set image.repository=ocir.eu-frankfurt-1.oci.oraclecloud.com/<your tenancy s3 namespace>/oke-ingress-combined-operator   --set image.tag=0.3.0   --set controllers.enableLabeler=true   --set controllers.enableBackendSync=true   --set labeler.ingressNamespace=ingress-nginx   --set labeler.ingressService=ingress-nginx-controller   --set labeler.labelKey=role   --set labeler.labelValue=ingress
 ```
 
 Annotate your `LoadBalancer` Service:
