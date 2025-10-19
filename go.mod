@@ -1,4 +1,4 @@
-module github.com/ronsevetoci/oke-ingress-combined-operator
+module github.com/ronsevetoci/oke-ingress-operator
 
 go 1.24
 
