@@ -1,5 +1,5 @@
 image:
-  repository: ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator
+  repository: ocir.eu-frankfurt-1.oci.oraclecloud.com/<your tenancy s3 namespace>/oke-ingress-combined-operator
   tag: "0.3.0"
   pullPolicy: IfNotPresent
 
