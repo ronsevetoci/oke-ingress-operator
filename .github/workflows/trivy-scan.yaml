@@ -1,0 +1,12 @@
+name: Trivy Scan
+on: { workflow_dispatch: {} }
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aquasecurity/trivy-action@0.22.0
+        with:
+          image-ref: ${{ secrets.OCIR_REGISTRY }}/frsxwtjslf35/oke-ingress-combined-operator:latest
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true

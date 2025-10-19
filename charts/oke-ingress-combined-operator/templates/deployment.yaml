@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oke-ingress-combined-operator
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: oke-ingress-combined-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oke-ingress-combined-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oke-ingress-combined-operator
+    spec:
+      serviceAccountName: {{ include "oke.operator.serviceAccountName" . }}
+      containers:
+      - name: manager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - --leader-elect
+        - --metrics-bind-address=:8080
+        - --health-probe-bind-address=:8081
+        - --enable-labeler={{ .Values.controllers.enableLabeler }}
+        - --enable-backend-sync={{ .Values.controllers.enableBackendSync }}
+        - --zap-log-level=info
+        env:
+        - name: INGRESS_NAMESPACE
+          value: "{{ .Values.labeler.ingressNamespace }}"
+        - name: INGRESS_SERVICE
+          value: "{{ .Values.labeler.ingressService }}"
+        - name: LABEL_KEY
+          value: "{{ .Values.labeler.labelKey }}"
+        - name: LABEL_VALUE
+          value: "{{ .Values.labeler.labelValue }}"
+        livenessProbe:
+          httpGet: { path: /healthz, port: 8081 }
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet: { path: /readyz, port: 8081 }
+          initialDelaySeconds: 5
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}

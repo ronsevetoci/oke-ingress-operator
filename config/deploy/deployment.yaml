@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oke-ingress-combined-operator
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: oke-ingress-combined-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oke-ingress-combined-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oke-ingress-combined-operator
+    spec:
+      serviceAccountName: oke-ingress-combined-operator
+      containers:
+      - name: manager
+        image: ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator:0.3.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - --leader-elect
+        - --metrics-bind-address=:8080
+        - --health-probe-bind-address=:8081
+        - --enable-labeler=true
+        - --enable-backend-sync=true
+        - --zap-log-level=info
+        env:
+        - name: INGRESS_NAMESPACE
+          value: ingress-nginx
+        - name: INGRESS_SERVICE
+          value: ingress-nginx-controller
+        - name: LABEL_KEY
+          value: role
+        - name: LABEL_VALUE
+          value: ingress
+        livenessProbe:
+          httpGet: { path: /healthz, port: 8081 }
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet: { path: /readyz, port: 8081 }
+          initialDelaySeconds: 5
+        resources:
+          requests: { cpu: "50m", memory: "64Mi" }
+          limits: { cpu: "200m", memory: "256Mi" }

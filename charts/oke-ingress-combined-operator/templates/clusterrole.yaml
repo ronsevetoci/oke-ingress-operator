@@ -1,0 +1,20 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: oke-ingress-combined-operator
+rules:
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get","list","watch","patch","update"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get","list","watch","patch","update"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create","patch","update"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get","list","watch","create","update","patch","delete"]

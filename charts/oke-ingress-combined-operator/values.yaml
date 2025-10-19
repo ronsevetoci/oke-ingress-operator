@@ -1,0 +1,26 @@
+image:
+  repository: ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator
+  tag: "0.3.0"
+  pullPolicy: IfNotPresent
+
+controllers:
+  enableLabeler: true
+  enableBackendSync: true
+
+labeler:
+  ingressNamespace: ingress-nginx
+  ingressService: ingress-nginx-controller
+  labelKey: role
+  labelValue: ingress
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+serviceAccount:
+  create: true
+  name: ""

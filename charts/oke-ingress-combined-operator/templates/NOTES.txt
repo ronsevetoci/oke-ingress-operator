@@ -1,0 +1,12 @@
+1) Operator status:
+   kubectl -n kube-system get deploy oke-ingress-combined-operator
+
+2) Logs:
+   kubectl -n kube-system logs deploy/oke-ingress-combined-operator -f
+
+3) Labeler check:
+   kubectl get nodes -l {{ .Values.labeler.labelKey }}={{ .Values.labeler.labelValue }} -o wide
+
+4) Backend-sync:
+   Annotate your Service with:
+   oci.oraclecloud.com/node-label-selector: "{{ .Values.labeler.labelKey }}={{ .Values.labeler.labelValue }}"
