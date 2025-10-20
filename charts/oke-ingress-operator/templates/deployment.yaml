@@ -26,7 +26,6 @@ spec:
         - --health-probe-bind-address=:8081
         - --enable-labeler={{ .Values.controllers.enableLabeler }}
         - --enable-backend-sync={{ .Values.controllers.enableBackendSync }}
-        - --zap-log-level=info
         env:
         - name: INGRESS_NAMESPACE
           value: "{{ .Values.labeler.ingressNamespace }}"

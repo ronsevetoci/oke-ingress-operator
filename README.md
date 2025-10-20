@@ -14,14 +14,18 @@ A focused operator for **Oracle Container Engine for Kubernetes (OKE)** that sol
 - Clear logs for operability and fast troubleshooting
 
 ---
+
+### Deploy 
+git clone https://github.com/ronsevetoci/oke-ingress-operator.git
+cd oke-ingress-operator
+
+helm install oke-ingress-operator ./helm/oke-ingress-operator \
+  --namespace kube-system
+  
 ## Verify
 kubectl get nodes -l role=ingress -o wide
 kubectl -n ingress-nginx get endpointslice -l kubernetes.io/service-name=ingress-nginx-controller -o wide
 kubectl -n kube-system logs deploy/oke-ingress-operator -f
-
-## Logging
-Uses controller-runtime Zap; tweak verbosity with:
---zap-log-level=info|debug|error  --zap-stacktrace-level=error  --zap-encoder=console|json
 
 ## Tested with
 - OKE 1.34.1
