@@ -1,6 +1,6 @@
 apiVersion: v2
-name: oke-ingress-combined-operator
+name: oke-ingress-operator
 description: OKE combined operator (EndpointSlice-driven node labeler + CCM backend-sync trigger)
 type: application
-version: 0.3.0
-appVersion: "0.3.0"
+version: 0.1.0
+appVersion: "v0.1.0"

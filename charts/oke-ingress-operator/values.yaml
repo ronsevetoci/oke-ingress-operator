@@ -1,6 +1,6 @@
 image:
-  repository: ocir.eu-frankfurt-1.oci.oraclecloud.com/<your tenancy s3 namespace>/oke-ingress-combined-operator
-  tag: "0.3.0"
+  repository: ghcr.io/ronsevetoci/oke-ingress-operator
+  tag: "v0.1.0"
   pullPolicy: IfNotPresent
 
 controllers:

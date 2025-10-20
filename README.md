@@ -14,38 +14,14 @@ A focused operator for **Oracle Container Engine for Kubernetes (OKE)** that sol
 - Clear logs for operability and fast troubleshooting
 
 ---
-
-## Install (Helm)
-```bash
-helm upgrade --install oke-ingress-combined charts/oke-ingress-combined-operator   -n kube-system --create-namespace   --set image.repository=ocir.eu-frankfurt-1.oci.oraclecloud.com/<your tenancy s3 namespace>/oke-ingress-combined-operator   --set image.tag=0.3.0   --set controllers.enableLabeler=true   --set controllers.enableBackendSync=true   --set labeler.ingressNamespace=ingress-nginx   --set labeler.ingressService=ingress-nginx-controller   --set labeler.labelKey=role   --set labeler.labelValue=ingress
-```
-
-Annotate your `LoadBalancer` Service:
-```yaml
-metadata:
-  annotations:
-    oci.oraclecloud.com/node-label-selector: "role=ingress"
-```
-
 ## Verify
-```bash
 kubectl get nodes -l role=ingress -o wide
 kubectl -n ingress-nginx get endpointslice -l kubernetes.io/service-name=ingress-nginx-controller -o wide
-kubectl -n kube-system logs deploy/oke-ingress-combined-operator -f
-```
-
-## Build & Push (Podman → OCIR)
-```bash
-podman build --platform=linux/amd64   -t ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator:0.3.0 .
-podman login ocir.eu-frankfurt-1.oci.oraclecloud.com
-podman push ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator:0.3.0
-```
+kubectl -n kube-system logs deploy/oke-ingress-operator -f
 
 ## Logging
 Uses controller-runtime Zap; tweak verbosity with:
-```
 --zap-log-level=info|debug|error  --zap-stacktrace-level=error  --zap-encoder=console|json
-```
 
 ## Tested with
 - OKE 1.34.1

@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: oke-ingress-combined-operator
+  name: oke-ingress-operator
   namespace: kube-system
   labels:
-    app.kubernetes.io/name: oke-ingress-combined-operator
+    app.kubernetes.io/name: oke-ingress-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: oke-ingress-combined-operator
+      app.kubernetes.io/name: oke-ingress-operator
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: oke-ingress-combined-operator
+        app.kubernetes.io/name: oke-ingress-operator
     spec:
       serviceAccountName: {{ include "oke.operator.serviceAccountName" . }}
       containers:

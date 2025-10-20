@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: aquasecurity/trivy-action@0.22.0
         with:
-          image-ref: ${{ secrets.OCIR_REGISTRY }}/frsxwtjslf35/oke-ingress-combined-operator:latest
+          image-ref: ${{ secrets.OCIR_REGISTRY }}/frsxwtjslf35/oke-ingress-operator:latest
           format: table
           exit-code: '1'
           ignore-unfixed: true

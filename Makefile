@@ -1,4 +1,4 @@
-IMG ?= ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-combined-operator:0.3.0
+IMG ?= ocir.eu-frankfurt-1.oci.oraclecloud.com/frsxwtjslf35/oke-ingress-operator:0.3.0
 
 .PHONY: build docker-build docker-push deploy helm-install
 
@@ -15,6 +15,6 @@ deploy:
 	kubectl apply -k config/deploy/
 
 helm-install:
-	helm upgrade --install oke-ingress-combined charts/oke-ingress-combined-operator -n kube-system --create-namespace \
+	helm upgrade --install oke-ingress-combined charts/oke-ingress-operator -n kube-system --create-namespace \
 	  --set image.repository=$(word 1,$(subst :, ,$(IMG))) \
 	  --set image.tag=$(word 2,$(subst :, ,$(IMG)))

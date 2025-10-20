@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.7
+LABEL org.opencontainers.image.source=https://github.com/ronsevetoci/oke-ingress-operator
 FROM --platform=$BUILDPLATFORM golang:1.24 AS builder
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64

@@ -2,6 +2,6 @@
 {{- if .Values.serviceAccount.name -}}
 {{ .Values.serviceAccount.name }}
 {{- else -}}
-oke-ingress-combined-operator
+oke-ingress-operator
 {{- end -}}
 {{- end -}}

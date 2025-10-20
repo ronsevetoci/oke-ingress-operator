@@ -19,4 +19,4 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.OCIR_REGISTRY }}/frsxwtjslf35/oke-ingress-combined-operator:${{ github.ref_name }}
+          tags: ${{ secrets.OCIR_REGISTRY }}/frsxwtjslf35/oke-ingress-operator:${{ github.ref_name }}

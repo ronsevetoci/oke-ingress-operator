@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// oke-ingress-combined-operator
+// oke-ingress-operator
 // - Controller A: EndpointSlice-driven node labeler for ingress Service
 // - Controller B: CCM backend-set sync trigger for Services annotated with
 //   oci.oraclecloud.com/node-label-selector
@@ -387,7 +387,7 @@ func main() {
 		Metrics:                metricsserver.Options{BindAddress: metricsAddr},
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         leader,
-		LeaderElectionID:       "oke-ingress-combined-operator",
+		LeaderElectionID:       "oke-ingress-operator",
 	})
 	if err != nil {
 		panic(fmt.Errorf("manager start: %w", err))
@@ -417,7 +417,7 @@ func main() {
 	if enableSync {
 		reconciler := &ServiceReconciler{
 			Client:   mgr.GetClient(),
-			Recorder: mgr.GetEventRecorderFor("oke-ingress-combined-operator"),
+			Recorder: mgr.GetEventRecorderFor("oke-ingress-operator"),
 		}
 		ctrl.Log.WithName("backend-sync").Info("enabled", "annotation", AnnotationNodeSelector)
 

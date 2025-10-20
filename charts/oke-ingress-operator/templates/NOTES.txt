@@ -1,8 +1,8 @@
 1) Operator status:
-   kubectl -n kube-system get deploy oke-ingress-combined-operator
+   kubectl -n kube-system get deploy oke-ingress-operator
 
 2) Logs:
-   kubectl -n kube-system logs deploy/oke-ingress-combined-operator -f
+   kubectl -n kube-system logs deploy/oke-ingress-operator -f
 
 3) Labeler check:
    kubectl get nodes -l {{ .Values.labeler.labelKey }}={{ .Values.labeler.labelValue }} -o wide
