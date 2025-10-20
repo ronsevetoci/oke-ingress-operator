@@ -19,9 +19,9 @@ A focused operator for **Oracle Container Engine for Kubernetes (OKE)** that sol
 git clone https://github.com/ronsevetoci/oke-ingress-operator.git
 cd oke-ingress-operator
 
-helm install oke-ingress-operator ./helm/oke-ingress-operator \
+helm install oke-ingress-operator ./charts/oke-ingress-operator \
   --namespace kube-system
-  
+
 ## Verify
 kubectl get nodes -l role=ingress -o wide
 kubectl -n ingress-nginx get endpointslice -l kubernetes.io/service-name=ingress-nginx-controller -o wide
