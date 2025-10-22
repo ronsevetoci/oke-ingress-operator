@@ -46,13 +46,14 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --set controller.service.type=LoadBalancer \
   --set controller.service.externalTrafficPolicy=Local \
   --set controller.service.annotations."oci\.oraclecloud\.com/node-label-selector"="role=ingress" \
-  \
+  --set controller.service.annotations."oci\.oraclecloud\.com/load-balancer-shape"="flexible" \
+  --set controller.service.annotations."oci\.oraclecloud\.com/load-balancer-shape-flex-min"="10" \
+  --set controller.service.annotations."oci\.oraclecloud\.com/load-balancer-shape-flex-max"="100" \
   --set 'controller.topologySpreadConstraints[0].maxSkew=1' \
   --set 'controller.topologySpreadConstraints[0].topologyKey=kubernetes.io/hostname' \
   --set 'controller.topologySpreadConstraints[0].whenUnsatisfiable=ScheduleAnyway' \
   --set 'controller.topologySpreadConstraints[0].labelSelector.matchLabels.app\.kubernetes\.io/name=ingress-nginx' \
   --set 'controller.topologySpreadConstraints[0].labelSelector.matchLabels.app\.kubernetes\.io/component=controller' \
-  \
   --set 'controller.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight=100' \
   --set 'controller.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey=kubernetes.io/hostname' \
   --set 'controller.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchLabels.app\.kubernetes\.io/name=ingress-nginx' \
