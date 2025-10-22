@@ -1,12 +1,25 @@
 name: Trivy Scan
-on: { workflow_dispatch: {} }
+on:
+  workflow_dispatch: {}
+
 jobs:
   scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read     # needed to pull from ghcr.io with GITHUB_TOKEN
     steps:
-      - uses: aquasecurity/trivy-action@0.22.0
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
-          image-ref: ${{ secrets.OCIR_REGISTRY }}/frsxwtjslf35/oke-ingress-operator:latest
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trivy scan (image)
+        uses: aquasecurity/trivy-action@0.22.0
+        with:
+          image-ref: ghcr.io/ronsevetoci/oke-ingress-operator:${{ github.ref_name }}
           format: table
-          exit-code: '1'
-          ignore-unfixed: true
+          exit-code: '1'         # fail the job on findings
+          ignore-unfixed: true   # ignore unfixed CVEs
