@@ -16,22 +16,25 @@ A focused operator for **Oracle Container Engine for Kubernetes (OKE)** that sol
 ---
 
 ### Deploy 
+```bash
 git clone https://github.com/ronsevetoci/oke-ingress-operator.git
 cd oke-ingress-operator
 
 helm install oke-ingress-operator ./charts/oke-ingress-operator \
   --namespace kube-system
-
+```
 ## Verify
+```bash
 kubectl get nodes -l role=ingress -o wide
 kubectl -n ingress-nginx get endpointslice -l kubernetes.io/service-name=ingress-nginx-controller -o wide
 kubectl -n kube-system logs deploy/oke-ingress-operator -f
-
+```
 ## Tested with
 - OKE 1.34.1
 - k8s.io/* v0.34.1, controller-runtime v0.22.3, Go 1.24
 
 ## Nginx optimal setup for this scenario with mitigations
+```bash
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --namespace ingress-nginx --create-namespace \
   \
@@ -54,6 +57,6 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --set 'controller.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey=kubernetes.io/hostname' \
   --set 'controller.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchLabels.app\.kubernetes\.io/name=ingress-nginx' \
   --set 'controller.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchLabels.app\.kubernetes\.io/component=controller'
-  
+```
 ## License
 Apache-2.0
