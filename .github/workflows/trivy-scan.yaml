@@ -19,7 +19,7 @@ jobs:
       - name: Trivy scan (image)
         uses: aquasecurity/trivy-action@0.22.0
         with:
-          image-ref: ghcr.io/ronsevetoci/oke-ingress-operator:${{ github.ref_name }}
+          image-ref: ghcr.io/ronsevetoci/oke-ingress-operator:v0.1.0
           format: table
           exit-code: '1'         # fail the job on findings
           ignore-unfixed: true   # ignore unfixed CVEs
