@@ -1,17 +1,55 @@
-name: Release (Trivy-gated to GHCR)
+name: CI & Release (GHCR, Trivy-gated)
 
 on:
+  pull_request:
   push:
-    tags: ['v*.*.*']        # e.g. v0.1.0, v0.2.1
+    branches: [ main ]
+    tags: ['v*.*.*']       # e.g., v0.1.0
+  workflow_dispatch: {}
 
 jobs:
-  build-scan-promote:
+  go-ci:
+    name: Go build/test/vet + tidy gate
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+
+      - name: Go module cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: gomod-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+
+      - name: Tidy (verify no drift)
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
+      - name: Build (read-only modules)
+        run: go build -mod=readonly ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test (quick)
+        run: go test -mod=readonly ./...
+
+  release:
+    name: Build → Trivy gate → Publish to GHCR
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    needs: go-ci
     permissions:
       contents: read
-      packages: write       # needed to push to ghcr.io
-      # security-events: write   # uncomment if you later upload SARIF
-
+      packages: write
     env:
       IMAGE: ghcr.io/ronsevetoci/oke-ingress-operator
       TAG: ${{ github.ref_name }}
@@ -27,6 +65,17 @@ jobs:
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Extract metadata (tags/labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ env.GATE_TAG }}   # temporary gate tag only
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -34,16 +83,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 1) Build & push a temporary "gate" image (multi-arch)
+      # ---- Build & push a temporary "gate" image (multi-arch) ----
       - name: Build & Push (temp gate tag)
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.IMAGE }}:${{ env.GATE_TAG }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # 2) Trivy gate: fail on HIGH/CRITICAL
+      # ---- Trivy gate: fail on HIGH/CRITICAL ----
       - name: Cache Trivy DB
         uses: actions/cache@v4
         with:
@@ -55,20 +108,25 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE }}:${{ env.GATE_TAG }}
           format: table
-          exit-code: '1'                  # gate: fail on findings
-          ignore-unfixed: true            # tweak policy as needed
+          exit-code: '1'                # gate: fail on findings
+          ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      # 3) Promote the clean image to the release tag and latest
-      - name: Promote to release and latest
+      # ---- Promote the clean image to <tag> and latest (no rebuild) ----
+      - name: Promote to release tag and latest
         run: |
           docker buildx imagetools create \
             -t "${IMAGE}:${TAG}" \
             -t "${IMAGE}:latest" \
             "${IMAGE}:${GATE_TAG}"
 
-      # 4) (Optional) Keep registry tidy by deleting the temp tag
-      #    Skipping deletion is fine if you want traceability.
-      - name: Cleanup gate tag (optional)
-        run: echo "Keeping ${GATE_TAG} for traceability"
+      # Optional: sanity pull to verify tags exist
+      - name: Pull sanity
+        run: |
+          docker pull ${IMAGE}:${TAG}
+          docker pull ${IMAGE}:latest
+
+      # Optional: keep or delete the temp gate tag (we keep it for traceability)
+      - name: Keep gate tag
+        run: echo "Keeping ${GATE_TAG} tag for traceability"
