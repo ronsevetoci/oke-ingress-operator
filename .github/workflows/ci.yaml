@@ -1,64 +1,31 @@
-name: Release (Gate with Trivy)
+name: Release (Trivy-gated to GHCR)
+
 on:
   push:
-    tags: ['v*.*.*']
+    tags: ['v*.*.*']        # e.g. v0.1.0, v0.2.1
 
 jobs:
-  build-and-scan:
+  build-scan-promote:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write     # needed by the next job for GHCR
-      security-events: write  # if you upload SARIF (optional)
+      packages: write       # needed to push to ghcr.io
+      # security-events: write   # uncomment if you later upload SARIF
+
     env:
       IMAGE: ghcr.io/ronsevetoci/oke-ingress-operator
       TAG: ${{ github.ref_name }}
-      LOCAL_TAG: oke-op:${{ github.sha }}
+      GATE_TAG: gate-${{ github.sha }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      # Build single-arch *loaded* into local Docker for Trivy
-      - name: Build (local)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64
-          tags: ${{ env.LOCAL_TAG }}
-          load: true
-
-      # Cache Trivy DB for speed
-      - name: Trivy cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/trivy
-          key: trivy-db-${{ runner.os }}-v1
-
-      - name: Trivy scan (gate)
-        uses: aquasecurity/trivy-action@0.22.0
-        with:
-          image-ref: ${{ env.LOCAL_TAG }}
-          format: table
-          exit-code: '1'              # <-- gate: fail on findings
-          ignore-unfixed: true        # tweak policy as you like
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'   # tighten/loosen as needed
-
-  push:
-    needs: build-and-scan
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    env:
-      IMAGE: ghcr.io/ronsevetoci/oke-ingress-operator
-      TAG: ${{ github.ref_name }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -67,16 +34,44 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Final build + push (can be multi-arch)
-      - name: Build & Push (GHCR)
+      # 1) Build & push a temporary "gate" image (multi-arch)
+      - name: Build & Push (temp gate tag)
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.IMAGE }}:${{ env.TAG }}
-            ${{ env.IMAGE }}:latest
+          tags: ${{ env.IMAGE }}:${{ env.GATE_TAG }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.version=${{ env.TAG }}
+
+      # 2) Trivy gate: fail on HIGH/CRITICAL
+      - name: Cache Trivy DB
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/trivy
+          key: trivy-db-${{ runner.os }}-v1
+
+      - name: Trivy scan (gate)
+        uses: aquasecurity/trivy-action@0.22.0
+        with:
+          image-ref: ${{ env.IMAGE }}:${{ env.GATE_TAG }}
+          format: table
+          exit-code: '1'                  # gate: fail on findings
+          ignore-unfixed: true            # tweak policy as needed
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # 3) Promote the clean image to the release tag and latest
+      - name: Promote to release and latest
+        run: |
+          docker buildx imagetools create \
+            -t "${IMAGE}:${TAG}" \
+            -t "${IMAGE}:latest" \
+            "${IMAGE}:${GATE_TAG}"
+
+      # 4) (Optional) Keep registry tidy by deleting the temp tag
+      #    Skipping deletion is fine if you want traceability.
+      - name: Cleanup gate tag (optional)
+        run: echo "Keeping ${GATE_TAG} for traceability"
